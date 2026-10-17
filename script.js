@@ -1,6 +1,10 @@
 let showForm = document.getElementById("show-form");
-
+let castForm = document.getElementById("show-cast");
+const castResults = document.getElementById("cast-results");
 showForm.addEventListener("submit", handleShowSubmit);
+let userShows;
+
+let arrayId = [];
 
 async function handleShowSubmit(event) {
   event.preventDefault();
@@ -17,10 +21,9 @@ async function handleShowSubmit(event) {
       throw new Error(`HTTP ${response.status}`);
     }
     const shows = await response.json();
+    userShows = shows;
+    console.log(userShows);
     console.log(shows);
-    console.log(shows[2].show.name);
-    const a = shows[2].show.summary;
-    console.log(a);
 
     displayShows(shows);
   } catch {
@@ -38,6 +41,7 @@ function displayShows(shows) {
     const sumLi = document.createElement("li");
     const dateLI = document.createElement("li");
     const endedLI = document.createElement("li");
+    arrayId.push(shows[count].show.id);
 
     li.textContent = shows[count].show.name;
     sumLi.innerHTML = shows[count].show.summary;
@@ -49,4 +53,27 @@ function displayShows(shows) {
     ul.appendChild(endedLI);
     count = count + 1;
   });
+  console.log(arrayId);
+}
+
+castResults.addEventListener("click", handleCastSubmit);
+async function handleCastSubmit(event) {
+  event.preventDefault();
+
+  try {
+    const casts = await getCastForShows(arrayId);
+    console.log("Here is the casts", casts);
+  } catch (error) {
+    console.error("Could not get casts ", error);
+  }
+}
+
+async function getCastForShows(ids) {
+  const casts = [];
+  for (let i = 1; i < ids.length; i++) {
+    const response = await fetch(`https://api.tvmaze.com/shows/${ids[i]}/cast`);
+    const cast = await response.json();
+    casts.push(cast);
+  }
+  return casts;
 }
